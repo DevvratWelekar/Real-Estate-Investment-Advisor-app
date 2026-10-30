@@ -15,7 +15,8 @@ python -m pip install -r requirements.txt
 ```
 
 `run.bat` starts the app and opens it in Google Chrome at
-`http://localhost:8501`. Google Chrome must be installed.
+`http://localhost:8501`. The app listens only on this computer. Google Chrome
+must be installed.
 
 To retrain the models, install the training dependency and run:
 
