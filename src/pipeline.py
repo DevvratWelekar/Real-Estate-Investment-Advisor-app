@@ -184,10 +184,13 @@ def build_benchmarks(training_rows: pd.DataFrame) -> dict[str, Any]:
         .reset_index()
     )
     city_type: dict[str, dict[str, float]] = {}
-    for row in keyed.itertuples(index=False):
-        city_type.setdefault(str(row.City), {})[str(row.Property_Type)] = float(
-            row.Price_per_SqFt
-        )
+    for city, property_type, price in zip(
+        keyed["City"].astype(str).to_numpy(),
+        keyed["Property_Type"].astype(str).to_numpy(),
+        keyed["Price_per_SqFt"].to_numpy(dtype=float),
+        strict=True,
+    ):
+        city_type.setdefault(city, {})[property_type] = price
     city_medians = training_rows.groupby("City")["Price_per_SqFt"].median()
     return {
         "city_property_type": city_type,
@@ -197,17 +200,25 @@ def build_benchmarks(training_rows: pd.DataFrame) -> dict[str, Any]:
 
 
 def relative_price_index(frame: pd.DataFrame, benchmarks: dict[str, Any]) -> pd.Series:
-    def ratio(row: pd.Series) -> float:
-        city = str(row["City"])
-        property_type = str(row["Property_Type"])
+    prices = pd.to_numeric(frame["Price_per_SqFt"], errors="coerce").to_numpy(
+        dtype=float
+    )
+    cities = frame["City"].astype(str).to_numpy()
+    property_types = frame["Property_Type"].astype(str).to_numpy()
+    ratios = []
+    for city, property_type, price in zip(
+        cities, property_types, prices, strict=True
+    ):
         median = (
             benchmarks.get("city_property_type", {}).get(city, {}).get(property_type)
             or benchmarks.get("city", {}).get(city)
             or benchmarks["overall"]
         )
-        return float(row["Price_per_SqFt"]) / max(float(median), 1e-9)
+        if not isinstance(median, (int, float)):
+            raise ValueError(f"Invalid price benchmark for {city}, {property_type}.")
+        ratios.append(price / max(median, 1e-9))
 
-    return frame.apply(ratio, axis=1).astype(float)
+    return pd.Series(ratios, index=frame.index, dtype=float)
 
 
 def make_feature_frame(

@@ -1,7 +1,7 @@
 $ErrorActionPreference = "Stop"
 
 $projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
-$url = "http://localhost:8501"
+$url = "http://127.0.0.1:8501"
 $chromeCandidates = @(
     (Join-Path $env:ProgramFiles "Google\Chrome\Application\chrome.exe"),
     (Join-Path ${env:ProgramFiles(x86)} "Google\Chrome\Application\chrome.exe"),
@@ -25,7 +25,12 @@ try {
     Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 2 | Out-Null
 } catch {
     $server = Start-Process -FilePath "python" `
-        -ArgumentList @("-m", "streamlit", "run", "app.py", "--server.headless", "true", "--server.port", "8501") `
+        -ArgumentList @(
+            "-m", "streamlit", "run", "app.py",
+            "--server.address", "127.0.0.1",
+            "--server.headless", "true",
+            "--server.port", "8501"
+        ) `
         -WorkingDirectory $projectRoot -NoNewWindow -PassThru
 
     $deadline = (Get-Date).AddSeconds(60)

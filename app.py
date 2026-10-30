@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 import joblib
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+from sklearn.pipeline import Pipeline
 
 from src.pipeline import (
     DEFAULT_GROWTH_RATE,
@@ -30,12 +32,17 @@ st.set_page_config(
 
 
 @st.cache_data(show_spinner=False)
-def load_data(path: str, modified: float) -> tuple[pd.DataFrame, dict[str, int]]:
+def load_data(
+    path: str,
+    modified: float,
+) -> tuple[pd.DataFrame, dict[str, int]]:
+    # `modified` intentionally participates in Streamlit's cache key.
+    del modified
     return load_and_clean_data(path)
 
 
 @st.cache_resource(show_spinner=False)
-def load_models() -> tuple[object, object, dict[str, object], dict[str, object]]:
+def load_models() -> tuple[Pipeline, Pipeline, dict[str, Any], dict[str, Any]]:
     classifier = joblib.load(MODEL_DIR / "classifier.joblib")
     regressor = joblib.load(MODEL_DIR / "regressor.joblib")
     with (MODEL_DIR / "benchmarks.json").open(encoding="utf-8") as file:
@@ -135,15 +142,15 @@ def show_analytics(data: pd.DataFrame) -> None:
     with location_tab:
         left, right = st.columns(2)
         city_price = (
-            data.groupby("City", as_index=False)["Price_in_Lakhs"]
-            .mean()
-            .sort_values("Price_in_Lakhs", ascending=False)
+            data.groupby("City", as_index=False)
+            .agg(Price_in_Lakhs=("Price_in_Lakhs", "mean"))
+            .sort_values(by="Price_in_Lakhs", ascending=False)
             .head(20)
         )
         state_rate = (
-            data.groupby("State", as_index=False)["Price_per_SqFt"]
-            .median()
-            .sort_values("Price_per_SqFt", ascending=False)
+            data.groupby("State", as_index=False)
+            .agg(Price_per_SqFt=("Price_per_SqFt", "median"))
+            .sort_values(by="Price_per_SqFt", ascending=False)
             .head(20)
         )
         with left:
@@ -177,7 +184,7 @@ def show_analytics(data: pd.DataFrame) -> None:
                 Median_Price_per_SqFt=("Price_per_SqFt", "median"),
                 Median_Age=("Age_of_Property", "median"),
             )
-            .sort_values("Median_Price", ascending=False)
+            .sort_values(by="Median_Price", ascending=False)
             .head(10)
         )
         st.markdown("**Top 10 localities by median asking price**")
@@ -210,8 +217,8 @@ def show_analytics(data: pd.DataFrame) -> None:
         left, right = st.columns(2)
         with left:
             furnished = (
-                data.groupby("Furnished_Status", as_index=False)["Price_in_Lakhs"]
-                .median()
+                data.groupby("Furnished_Status", as_index=False)
+                .agg(Price_in_Lakhs=("Price_in_Lakhs", "median"))
                 .sort_values("Price_in_Lakhs", ascending=False)
             )
             st.plotly_chart(
@@ -239,7 +246,7 @@ def show_analytics(data: pd.DataFrame) -> None:
             st.plotly_chart(
                 px.imshow(
                     corr,
-                    text_auto=".2f",
+                    text_auto=True,
                     color_continuous_scale="RdBu_r",
                     zmin=-1,
                     zmax=1,
@@ -252,9 +259,9 @@ def show_analytics(data: pd.DataFrame) -> None:
             ("Nearby_Hospitals", "Nearby hospitals"),
         ]:
             access = (
-                data.groupby(column, as_index=False)["Price_per_SqFt"]
-                .median()
-                .sort_values(column)
+                data.groupby(column, as_index=False)
+                .agg(Price_per_SqFt=("Price_per_SqFt", "median"))
+                .sort_values(by=column)
             )
             st.plotly_chart(
                 px.line(
@@ -273,9 +280,9 @@ def show_analytics(data: pd.DataFrame) -> None:
         left, right = st.columns(2)
         with left:
             facing = (
-                data.groupby("Facing", as_index=False)["Price_per_SqFt"]
-                .median()
-                .sort_values("Price_per_SqFt", ascending=False)
+                data.groupby("Facing", as_index=False)
+                .agg(Price_per_SqFt=("Price_per_SqFt", "median"))
+                .sort_values(by="Price_per_SqFt", ascending=False)
             )
             st.plotly_chart(
                 px.bar(
@@ -289,9 +296,9 @@ def show_analytics(data: pd.DataFrame) -> None:
             )
         with right:
             parking = (
-                data.groupby("Parking_Space", as_index=False)["Price_in_Lakhs"]
-                .median()
-                .sort_values("Price_in_Lakhs", ascending=False)
+                data.groupby("Parking_Space", as_index=False)
+                .agg(Price_in_Lakhs=("Price_in_Lakhs", "median"))
+                .sort_values(by="Price_in_Lakhs", ascending=False)
             )
             st.plotly_chart(
                 px.bar(
@@ -305,7 +312,12 @@ def show_analytics(data: pd.DataFrame) -> None:
             )
         left, right = st.columns(2)
         with left:
-            owners = data["Owner_Type"].value_counts().rename_axis("Owner_Type").reset_index(name="Listings")
+            owners = (
+                data["Owner_Type"]
+                .value_counts()
+                .rename_axis("Owner_Type")
+                .reset_index(name="Listings")
+            )
             st.plotly_chart(
                 px.bar(owners, x="Owner_Type", y="Listings", title="Listings by owner type"),
                 width="stretch",
@@ -327,9 +339,9 @@ def show_analytics(data: pd.DataFrame) -> None:
             )
         with right:
             amenity_prices = (
-                data.groupby("Amenities_Count", as_index=False)["Price_per_SqFt"]
-                .median()
-                .sort_values("Amenities_Count")
+                data.groupby("Amenities_Count", as_index=False)
+                .agg(Price_per_SqFt=("Price_per_SqFt", "median"))
+                .sort_values(by="Amenities_Count")
             )
             st.plotly_chart(
                 px.bar(
@@ -346,7 +358,7 @@ def show_analytics(data: pd.DataFrame) -> None:
             )
         st.plotly_chart(
             px.box(
-            chart_data,
+                chart_data,
                 x="Public_Transport_Accessibility",
                 y="Price_per_SqFt",
                 title="Price per sq ft by public transport access",
@@ -441,14 +453,17 @@ def show_advisor(data: pd.DataFrame) -> None:
     cities = sorted(data["City"].dropna().astype(str).unique())
     states = sorted(data["State"].dropna().astype(str).unique())
     property_types = sorted(data["Property_Type"].dropna().astype(str).unique())
+    if not cities or not states or not property_types:
+        st.warning("The dataset has no valid city, state, or property type values.")
+        return
 
     with st.form("investment-form"):
         col1, col2, col3 = st.columns(3)
         with col1:
-            city = st.selectbox("City", cities)
-            state = st.selectbox("State", states)
+            city = st.selectbox("City", cities, index=0)
+            state = st.selectbox("State", states, index=0)
             locality = st.text_input("Locality", "Unknown")
-            property_type = st.selectbox("Property type", property_types)
+            property_type = st.selectbox("Property type", property_types, index=0)
             bhk = st.number_input("BHK", min_value=1, max_value=20, value=2)
             size = st.number_input("Area (sq ft)", min_value=100, max_value=100_000, value=1_000)
         with col2:
@@ -498,6 +513,9 @@ def show_advisor(data: pd.DataFrame) -> None:
     if floor > total_floors:
         st.error("Floor number cannot exceed total floors.")
         return
+    if city is None or state is None or property_type is None:
+        st.error("Select a valid city, state, and property type.")
+        return
     raw = make_prediction_input(
         city,
         property_type,
@@ -526,9 +544,11 @@ def show_advisor(data: pd.DataFrame) -> None:
     class_prediction = int(probability >= 0.5)
     baseline_forecast = float(regressor.predict(x_input[FEATURE_COLUMNS])[0])
     forecast = forecast_for_growth_scenario(baseline_forecast, annual_rate / 100)
-    implied_rate = float(benchmarks["city_property_type"].get(city, {}).get(property_type)
-                        or benchmarks.get("city", {}).get(city)
-                        or benchmarks["overall"])
+    implied_rate = float(
+        benchmarks["city_property_type"].get(city, {}).get(property_type)
+        or benchmarks.get("city", {}).get(city)
+        or benchmarks["overall"]
+    )
     current_price_per_sqft = float(price) / int(size)
 
     left, middle, right = st.columns(3)

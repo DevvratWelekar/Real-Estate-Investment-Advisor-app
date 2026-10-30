@@ -11,7 +11,6 @@ import joblib
 import mlflow
 import mlflow.sklearn
 import numpy as np
-import pandas as pd
 from sklearn.metrics import (
     accuracy_score,
     confusion_matrix,
@@ -96,7 +95,7 @@ def train(data_path: Path, export_cleaned: bool = True) -> dict[str, object]:
             {"confusion_matrix": confusion_matrix(y_test_class, predictions).tolist()},
             "evaluation/classification.json",
         )
-        mlflow.sklearn.log_model(
+        mlflow.sklearn.log_model(  # pyright: ignore[reportPrivateImportUsage]
             classifier,
             artifact_path="classifier",
             registered_model_name="real-estate-investment-classifier",
@@ -125,7 +124,7 @@ def train(data_path: Path, export_cleaned: bool = True) -> dict[str, object]:
             }
         )
         mlflow.log_metrics(regression_metrics)
-        mlflow.sklearn.log_model(
+        mlflow.sklearn.log_model(  # pyright: ignore[reportPrivateImportUsage]
             regressor,
             artifact_path="regressor",
             registered_model_name="real-estate-five-year-price-regressor",
