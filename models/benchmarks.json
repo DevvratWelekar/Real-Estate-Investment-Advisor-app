@@ -1,0 +1,259 @@
+{
+  "city_property_type": {
+    "Ahmedabad": {
+      "Apartment": 0.0931138069358178,
+      "Independent House": 0.0929001079346995,
+      "Villa": 0.08996904024767802
+    },
+    "Amritsar": {
+      "Apartment": 0.09165997468826087,
+      "Independent House": 0.09144008896302475,
+      "Villa": 0.09236972704714641
+    },
+    "Bangalore": {
+      "Apartment": 0.0951805154114844,
+      "Independent House": 0.09707801660252338,
+      "Villa": 0.09006067291781578
+    },
+    "Bhopal": {
+      "Apartment": 0.09479041916167665,
+      "Independent House": 0.09065130260521043,
+      "Villa": 0.08968247422680412
+    },
+    "Bhubaneswar": {
+      "Apartment": 0.08937705748290706,
+      "Independent House": 0.09435732009925558,
+      "Villa": 0.0928274655587142
+    },
+    "Bilaspur": {
+      "Apartment": 0.09349928876244666,
+      "Independent House": 0.0928835277497637,
+      "Villa": 0.0892743953294412
+    },
+    "Chennai": {
+      "Apartment": 0.09340438654140523,
+      "Independent House": 0.09905272808388503,
+      "Villa": 0.09307593965737662
+    },
+    "Coimbatore": {
+      "Apartment": 0.09397978354094344,
+      "Independent House": 0.09383561643835617,
+      "Villa": 0.08973709229672237
+    },
+    "Cuttack": {
+      "Apartment": 0.09157448603950613,
+      "Independent House": 0.09268702290076336,
+      "Villa": 0.09155232558139535
+    },
+    "Dehradun": {
+      "Apartment": 0.0909166221272047,
+      "Independent House": 0.09312582282913165,
+      "Villa": 0.09507454878367774
+    },
+    "Durgapur": {
+      "Apartment": 0.08872829719502062,
+      "Independent House": 0.09106392927853206,
+      "Villa": 0.09181381437220514
+    },
+    "Dwarka": {
+      "Apartment": 0.09145886561062852,
+      "Independent House": 0.0938857006217121,
+      "Villa": 0.09184397163120568
+    },
+    "Faridabad": {
+      "Apartment": 0.09059780686239831,
+      "Independent House": 0.09318073438245113,
+      "Villa": 0.08995271279243405
+    },
+    "Gaya": {
+      "Apartment": 0.09304812834224599,
+      "Independent House": 0.09150718384605427,
+      "Villa": 0.09270561797752809
+    },
+    "Gurgaon": {
+      "Apartment": 0.09417445499892513,
+      "Independent House": 0.09123243492282884,
+      "Villa": 0.09100116843068917
+    },
+    "Guwahati": {
+      "Apartment": 0.09549047483650838,
+      "Independent House": 0.09380481182632096,
+      "Villa": 0.09070783981951494
+    },
+    "Haridwar": {
+      "Apartment": 0.09007844397615794,
+      "Independent House": 0.09046689010986794,
+      "Villa": 0.09064343163538874
+    },
+    "Hyderabad": {
+      "Apartment": 0.09304565980933266,
+      "Independent House": 0.09119890434049725,
+      "Villa": 0.0951784214945424
+    },
+    "Indore": {
+      "Apartment": 0.09175276752767528,
+      "Independent House": 0.09154277528019839,
+      "Villa": 0.09131708316263826
+    },
+    "Jaipur": {
+      "Apartment": 0.08902743142144638,
+      "Independent House": 0.08934834093234836,
+      "Villa": 0.09150939583754293
+    },
+    "Jamshedpur": {
+      "Apartment": 0.09222675069691606,
+      "Independent House": 0.09437555358724535,
+      "Villa": 0.08748138957816377
+    },
+    "Jodhpur": {
+      "Apartment": 0.09193633407939686,
+      "Independent House": 0.09226742012866646,
+      "Villa": 0.09476619138040021
+    },
+    "Kochi": {
+      "Apartment": 0.09190597853857947,
+      "Independent House": 0.09296580600139567,
+      "Villa": 0.0909549781503518
+    },
+    "Kolkata": {
+      "Apartment": 0.09250184245780427,
+      "Independent House": 0.09446051746625353,
+      "Villa": 0.08969044414535667
+    },
+    "Lucknow": {
+      "Apartment": 0.092573848532887,
+      "Independent House": 0.09517620556448382,
+      "Villa": 0.09141294404563405
+    },
+    "Ludhiana": {
+      "Apartment": 0.08856894133945745,
+      "Independent House": 0.09245611459442521,
+      "Villa": 0.09396662231002792
+    },
+    "Mangalore": {
+      "Apartment": 0.09873894421161158,
+      "Independent House": 0.09680980045466027,
+      "Villa": 0.08998620689655172
+    },
+    "Mumbai": {
+      "Apartment": 0.09738468308753778,
+      "Independent House": 0.09312676279189408,
+      "Villa": 0.0906668133802817
+    },
+    "Mysore": {
+      "Apartment": 0.09096706885380496,
+      "Independent House": 0.09530117701361643,
+      "Villa": 0.09250095020904599
+    },
+    "Nagpur": {
+      "Apartment": 0.0922694891105231,
+      "Independent House": 0.0948999271725891,
+      "Villa": 0.09008566660625832
+    },
+    "New Delhi": {
+      "Apartment": 0.0906108897742364,
+      "Independent House": 0.09057115212951158,
+      "Villa": 0.0921217827997489
+    },
+    "Noida": {
+      "Apartment": 0.09572727272727272,
+      "Independent House": 0.09542647994907702,
+      "Villa": 0.09225686711210096
+    },
+    "Patna": {
+      "Apartment": 0.09543319415448852,
+      "Independent House": 0.08885483054359118,
+      "Villa": 0.09237541528239203
+    },
+    "Pune": {
+      "Apartment": 0.09401445783132531,
+      "Independent House": 0.09804506934246597,
+      "Villa": 0.09215215479197503
+    },
+    "Raipur": {
+      "Apartment": 0.09235765673175746,
+      "Independent House": 0.09260575296108291,
+      "Villa": 0.09113943619143061
+    },
+    "Ranchi": {
+      "Apartment": 0.09549461690008731,
+      "Independent House": 0.09180372068184885,
+      "Villa": 0.09541927409261576
+    },
+    "Silchar": {
+      "Apartment": 0.0910819009100101,
+      "Independent House": 0.09185246484817788,
+      "Villa": 0.09311080212679274
+    },
+    "Surat": {
+      "Apartment": 0.09363833831115938,
+      "Independent House": 0.09725636878285483,
+      "Villa": 0.09605985037406485
+    },
+    "Trivandrum": {
+      "Apartment": 0.09319020119225038,
+      "Independent House": 0.09348352106800167,
+      "Villa": 0.08663462835134117
+    },
+    "Vijayawada": {
+      "Apartment": 0.08995412844036697,
+      "Independent House": 0.09261474269819193,
+      "Villa": 0.09277634098777975
+    },
+    "Vishakhapatnam": {
+      "Apartment": 0.09496461930370789,
+      "Independent House": 0.09492880276532148,
+      "Villa": 0.09177557360608093
+    },
+    "Warangal": {
+      "Apartment": 0.09034909822604897,
+      "Independent House": 0.0936500107227107,
+      "Villa": 0.09408628566456725
+    }
+  },
+  "city": {
+    "Ahmedabad": 0.09176470588235294,
+    "Amritsar": 0.09183283041506426,
+    "Bangalore": 0.09402093087303773,
+    "Bhopal": 0.09156594850236469,
+    "Bhubaneswar": 0.09238954012623984,
+    "Bilaspur": 0.09170695611649887,
+    "Chennai": 0.0951420695504665,
+    "Coimbatore": 0.09270730503455084,
+    "Cuttack": 0.0920460919773346,
+    "Dehradun": 0.09266253537918506,
+    "Durgapur": 0.09046897139665797,
+    "Dwarka": 0.09220888355342137,
+    "Faridabad": 0.09152604548789435,
+    "Gaya": 0.09251195911846775,
+    "Gurgaon": 0.09232582232582233,
+    "Guwahati": 0.09308157216275448,
+    "Haridwar": 0.09044018363489062,
+    "Hyderabad": 0.09302769818529132,
+    "Indore": 0.09150633932935753,
+    "Jaipur": 0.08998826291079812,
+    "Jamshedpur": 0.09120887803421714,
+    "Jodhpur": 0.09275800819361914,
+    "Kochi": 0.09188296392074728,
+    "Kolkata": 0.0923545629997243,
+    "Lucknow": 0.09306295594222488,
+    "Ludhiana": 0.091400093419884,
+    "Mangalore": 0.09525011681738807,
+    "Mumbai": 0.09354792043399639,
+    "Mysore": 0.0929877397830996,
+    "Nagpur": 0.09317363234794426,
+    "New Delhi": 0.0910918503199461,
+    "Noida": 0.09463961407491486,
+    "Patna": 0.0924492548597193,
+    "Pune": 0.09494953832939661,
+    "Raipur": 0.09199089483404352,
+    "Ranchi": 0.0946161565479177,
+    "Silchar": 0.09202376237623763,
+    "Surat": 0.09527744270205066,
+    "Trivandrum": 0.09109129312367989,
+    "Vijayawada": 0.09191345647816236,
+    "Vishakhapatnam": 0.09332589908001115,
+    "Warangal": 0.09232711555959963
+  },
+  "overall": 0.09241249788276293
+}

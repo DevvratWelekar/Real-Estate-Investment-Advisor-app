@@ -1,0 +1,26 @@
+{
+  "classification_metrics": {
+    "accuracy": 0.99436,
+    "precision": 0.9941546222524723,
+    "recall": 0.9945528097088157,
+    "f1": 0.9943536761172513,
+    "roc_auc": 0.9998929598134932
+  },
+  "regression_metrics": {
+    "rmse": 0.0023727441731276485,
+    "mae": 0.001779789422801552,
+    "r2": 0.9999999998691912
+  },
+  "cleaning_report": {
+    "rows_loaded": 250000,
+    "duplicates_removed": 0,
+    "invalid_rows_removed": 0,
+    "rows_cleaned": 250000
+  },
+  "rows_train": 200000,
+  "rows_test": 50000,
+  "annual_growth_rate": 0.08,
+  "forecast_years": 5,
+  "classifier_run_id": "4c502828a919442aa3bbb76c3a633dc2",
+  "regressor_run_id": "9aa853e60ec64382a34d0ea101466e23"
+}
