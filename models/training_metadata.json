@@ -1,26 +1,42 @@
 {
   "classification_metrics": {
-    "accuracy": 0.99436,
-    "precision": 0.9941546222524723,
-    "recall": 0.9945528097088157,
-    "f1": 0.9943536761172513,
-    "roc_auc": 0.9998929598134932
+    "accuracy": 0.71228,
+    "precision": 0.70798443212643,
+    "recall": 0.7213121320142588,
+    "f1": 0.7145861439568288,
+    "roc_auc": 0.7831691565939385
   },
+  "classification_confusion_matrix": [
+    [
+      17605,
+      7428
+    ],
+    [
+      6958,
+      18009
+    ]
+  ],
   "regression_metrics": {
-    "rmse": 0.0023727441731276485,
-    "mae": 0.001779789422801552,
-    "r2": 0.9999999998691912
+    "rmse": 0.0012747656809448758,
+    "mae": 0.0010425180789866266,
+    "r2": 0.9999999999622431
   },
   "cleaning_report": {
     "rows_loaded": 250000,
     "duplicates_removed": 0,
     "invalid_rows_removed": 0,
-    "rows_cleaned": 250000
+    "rows_cleaned": 250000,
+    "outliers_price_per_sqft": 19723,
+    "outliers_price_in_lakhs": 0,
+    "outliers_size_in_sqft": 0
   },
   "rows_train": 200000,
   "rows_test": 50000,
   "annual_growth_rate": 0.08,
   "forecast_years": 5,
-  "classifier_run_id": "4c502828a919442aa3bbb76c3a633dc2",
-  "regressor_run_id": "9aa853e60ec64382a34d0ea101466e23"
+  "classification_label_rule": "Price per square foot at or below training city/property-type median",
+  "regression_target_is_scenario_derived": true,
+  "regression_evaluation_note": "Metrics evaluate a formula-derived scenario, not realized future sale prices.",
+  "classifier_run_id": "5dcb46aeff87441a906c19d6095b00dc",
+  "regressor_run_id": "0a1b49055b994e3981a14cda8e2453b6"
 }

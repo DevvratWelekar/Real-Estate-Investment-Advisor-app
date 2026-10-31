@@ -25,8 +25,10 @@ from sklearn.metrics import (
 from sklearn.model_selection import train_test_split
 
 from src.pipeline import (
+    CLASSIFIER_FEATURE_COLUMNS,
     DEFAULT_GROWTH_RATE,
     FORECAST_YEARS,
+    REGRESSION_FEATURE_COLUMNS,
     build_benchmarks,
     future_price_target,
     investment_labels,
@@ -69,8 +71,10 @@ def train(data_path: Path, export_cleaned: bool = True) -> dict[str, object]:
 
     classifier = make_classifier()
     with mlflow.start_run(run_name="investment-classifier") as run:
-        classifier.fit(x_train, y_train_class)
-        probabilities = classifier.predict_proba(x_test)[:, 1]
+        classifier.fit(x_train[CLASSIFIER_FEATURE_COLUMNS], y_train_class)
+        probabilities = classifier.predict_proba(
+            x_test[CLASSIFIER_FEATURE_COLUMNS]
+        )[:, 1]
         predictions = (probabilities >= 0.5).astype("int8")
         class_metrics = {
             "accuracy": float(accuracy_score(y_test_class, predictions)),
@@ -85,14 +89,16 @@ def train(data_path: Path, export_cleaned: bool = True) -> dict[str, object]:
             {
                 "model": "LogisticRegression",
                 "label_rule": "price per sqft <= training city/property-type median",
+                "features_exclude_price_fields": True,
                 "test_size": 0.2,
                 "random_state": 42,
                 "training_rows": len(train_rows),
             }
         )
         mlflow.log_metrics(class_metrics)
+        class_confusion_matrix = confusion_matrix(y_test_class, predictions)
         mlflow.log_dict(
-            {"confusion_matrix": confusion_matrix(y_test_class, predictions).tolist()},
+            {"confusion_matrix": class_confusion_matrix.tolist()},
             "evaluation/classification.json",
         )
         mlflow.sklearn.log_model(  # pyright: ignore[reportPrivateImportUsage]
@@ -105,8 +111,8 @@ def train(data_path: Path, export_cleaned: bool = True) -> dict[str, object]:
 
     regressor = make_regressor()
     with mlflow.start_run(run_name="five-year-price-regressor") as run:
-        regressor.fit(x_train, y_train_reg)
-        reg_predictions = regressor.predict(x_test)
+        regressor.fit(x_train[REGRESSION_FEATURE_COLUMNS], y_train_reg)
+        reg_predictions = regressor.predict(x_test[REGRESSION_FEATURE_COLUMNS])
         regression_metrics = {
             "rmse": float(np.sqrt(mean_squared_error(y_test_reg, reg_predictions))),
             "mae": float(mean_absolute_error(y_test_reg, reg_predictions)),
@@ -116,6 +122,8 @@ def train(data_path: Path, export_cleaned: bool = True) -> dict[str, object]:
             {
                 "model": "Ridge",
                 "target": "Price_in_Lakhs compounded at fixed annual rate",
+                "target_is_scenario_derived": True,
+                "evaluation_note": "Metrics evaluate a formula-derived scenario, not realized future sale prices.",
                 "annual_growth_rate": DEFAULT_GROWTH_RATE,
                 "forecast_years": FORECAST_YEARS,
                 "test_size": 0.2,
@@ -136,12 +144,20 @@ def train(data_path: Path, export_cleaned: bool = True) -> dict[str, object]:
     joblib.dump(regressor, MODEL_DIR / "regressor.joblib", compress=3)
     metadata = {
         "classification_metrics": class_metrics,
+        "classification_confusion_matrix": class_confusion_matrix.tolist(),
         "regression_metrics": regression_metrics,
         "cleaning_report": cleaning_report,
         "rows_train": len(train_rows),
         "rows_test": len(test_rows),
         "annual_growth_rate": DEFAULT_GROWTH_RATE,
         "forecast_years": FORECAST_YEARS,
+        "classification_label_rule": (
+            "Price per square foot at or below training city/property-type median"
+        ),
+        "regression_target_is_scenario_derived": True,
+        "regression_evaluation_note": (
+            "Metrics evaluate a formula-derived scenario, not realized future sale prices."
+        ),
         "classifier_run_id": classifier_run_id,
         "regressor_run_id": regressor_run_id,
     }

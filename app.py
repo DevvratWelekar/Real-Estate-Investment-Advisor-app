@@ -14,7 +14,8 @@ from sklearn.pipeline import Pipeline
 
 from src.pipeline import (
     DEFAULT_GROWTH_RATE,
-    FEATURE_COLUMNS,
+    CLASSIFIER_FEATURE_COLUMNS,
+    REGRESSION_FEATURE_COLUMNS,
     forecast_for_growth_scenario,
     load_and_clean_data,
     make_feature_frame,
@@ -375,7 +376,8 @@ def show_analytics(data: pd.DataFrame) -> None:
             "infrastructure scores; those effects cannot be measured here."
         )
     with data_tab:
-        st.caption("Duplicate rows and rows with invalid price/area/BHK are removed.")
+        st.caption(        "Duplicate rows and rows with invalid price/area/BHK are removed. "
+        "IQR outliers are flagged for analysis, not automatically discarded.")
         st.dataframe(data.head(2_000), width="stretch", hide_index=True)
         st.download_button(
             "Download cleaned CSV",
@@ -443,12 +445,13 @@ def show_advisor(data: pd.DataFrame) -> None:
         )
         return
 
-    classifier, regressor, benchmarks, metadata = load_models()
+    classifier, regressor, benchmarks, _ = load_models()
     st.subheader("Property investment assessment")
     st.caption(
-        "The investment classification is a market-value proxy: a property is "
-        "labeled attractive when its price per sq ft is at or below the training "
-        "median for its city and property type. It is not a return guarantee."
+        "The classifier estimates whether a listing matches the dataset's "
+        "market-value proxy (price per sq ft at or below its city/property-type "
+        "median). Price fields are excluded from classifier inputs to prevent "
+        "target leakage. This is not a return guarantee."
     )
     cities = sorted(data["City"].dropna().astype(str).unique())
     states = sorted(data["State"].dropna().astype(str).unique())
@@ -540,10 +543,16 @@ def show_advisor(data: pd.DataFrame) -> None:
     )
     clean, _ = load_and_clean_data(raw)
     x_input = make_feature_frame(clean, benchmarks)
-    probability = float(classifier.predict_proba(x_input[FEATURE_COLUMNS])[0, 1])
+    probability = float(
+        classifier.predict_proba(x_input[CLASSIFIER_FEATURE_COLUMNS])[0, 1]
+    )
     class_prediction = int(probability >= 0.5)
-    baseline_forecast = float(regressor.predict(x_input[FEATURE_COLUMNS])[0])
-    forecast = forecast_for_growth_scenario(baseline_forecast, annual_rate / 100)
+    baseline_forecast = float(
+        regressor.predict(x_input[REGRESSION_FEATURE_COLUMNS])[0]
+    )
+    forecast = forecast_for_growth_scenario(
+        baseline_forecast, annual_rate / 100
+    )
     implied_rate = float(
         benchmarks["city_property_type"].get(city, {}).get(property_type)
         or benchmarks.get("city", {}).get(city)
@@ -557,15 +566,22 @@ def show_advisor(data: pd.DataFrame) -> None:
         "Good Investment" if class_prediction else "Not a Good Investment",
         f"{probability:.0%} model probability",
     )
-    middle.metric("Estimated price after 5 years", money_lakhs(forecast))
-    right.metric("Current price per sq ft", f"₹{current_price_per_sqft:.4f} lakh")
+    middle.metric("Current asking price", money_lakhs(float(price)))
+    right.metric("Estimated price after 5 years", money_lakhs(forecast))
     relative = current_price_per_sqft / max(implied_rate, 1e-9)
     st.caption(
         f"City/property-type median: ₹{implied_rate:.4f} lakh per sq ft. "
         f"This listing is {relative:.2f}× that benchmark. Forecast uses a "
-        f"{annual_rate:.1f}% annual scenario; model training baseline is "
-        f"{metadata['annual_growth_rate']:.0%}. Estimates exclude transaction "
+        f"{annual_rate:.1f}% annual growth scenario. The regression target is "
+        "formula-derived from the asking price; historical sale prices are not "
+        "available, so this is not a forecast of realized market appreciation. "
+        f"Estimates exclude transaction "
         "costs, taxes, financing, rent, and market shocks."
+    )
+    st.caption(
+        f"Entered asking price: {money_lakhs(float(price))} "
+        f"(₹{current_price_per_sqft:.4f} lakh per sq ft), "
+        f"{relative:.2f}× the city/property-type median benchmark."
     )
 
 
@@ -632,7 +648,11 @@ def main() -> None:
     st.caption(
         f"Showing {len(filtered):,} of {len(data):,} properties. "
         f"Removed {cleaning['duplicates_removed']:,} duplicates and "
-        f"{cleaning['invalid_rows_removed']:,} invalid rows."
+        f"{cleaning['invalid_rows_removed']:,} invalid rows. "
+        f"IQR-flagged outliers (retained): price/sq ft "
+        f"{cleaning['outliers_price_per_sqft']:,}, price "
+        f"{cleaning['outliers_price_in_lakhs']:,}, area "
+        f"{cleaning['outliers_size_in_sqft']:,}."
     )
     analytics_tab, advisor_tab, model_tab = st.tabs(
         ["Market insights", "Investment advisor", "Model evaluation"]
@@ -664,6 +684,20 @@ def main() -> None:
             with right:
                 st.markdown("**Five-year price regression**")
                 st.json(metadata["regression_metrics"])
+            st.markdown("**Classification confusion matrix**")
+            st.dataframe(
+                pd.DataFrame(
+                    metadata["classification_confusion_matrix"],
+                    index=["Actual: not proxy-good", "Actual: proxy-good"],
+                    columns=["Predicted: not proxy-good", "Predicted: proxy-good"],
+                ),
+                width="stretch",
+            )
+            st.caption(
+                "Regression metrics evaluate a formula-derived five-year target, "
+                "not realized future sale prices. They do not measure market "
+                "forecast accuracy."
+            )
             try:
                 classifier, _, _, _ = load_models()
                 from src.pipeline import feature_importance

@@ -29,8 +29,6 @@ REQUIRED_COLUMNS = {
 NUMERIC_FEATURES = [
     "BHK",
     "Size_in_SqFt",
-    "Price_in_Lakhs",
-    "Price_per_SqFt",
     "Year_Built",
     "Age_of_Property",
     "Floor_No",
@@ -38,10 +36,11 @@ NUMERIC_FEATURES = [
     "Floor_Ratio",
     "Nearby_Schools",
     "Nearby_Hospitals",
+    "School_Density_Score",
+    "Hospital_Density_Score",
     "Parking_Space_Count",
     "Amenities_Count",
     "Services_Count",
-    "Relative_Price_Index",
 ]
 
 CATEGORICAL_FEATURES = [
@@ -58,6 +57,9 @@ CATEGORICAL_FEATURES = [
 ]
 
 FEATURE_COLUMNS = NUMERIC_FEATURES + CATEGORICAL_FEATURES
+CLASSIFIER_FEATURE_COLUMNS = FEATURE_COLUMNS
+REGRESSION_NUMERIC_FEATURES = ["Price_in_Lakhs", *NUMERIC_FEATURES]
+REGRESSION_FEATURE_COLUMNS = REGRESSION_NUMERIC_FEATURES + CATEGORICAL_FEATURES
 
 
 def load_and_clean_data(source: str | Path | Any) -> tuple[pd.DataFrame, dict[str, int]]:
@@ -139,6 +141,9 @@ def load_and_clean_data(source: str | Path | Any) -> tuple[pd.DataFrame, dict[st
     frame["Floor_Ratio"] = (
         frame["Floor_No"] / frame["Total_Floors"].replace(0, np.nan)
     )
+    area_units = frame["Size_in_SqFt"] / 10_000
+    frame["School_Density_Score"] = frame["Nearby_Schools"] / area_units
+    frame["Hospital_Density_Score"] = frame["Nearby_Hospitals"] / area_units
     frame["Parking_Space_Count"] = frame["Parking_Space"].map(_parking_count)
     frame["Amenities_Count"] = frame["Amenities"].map(_amenities_count)
     frame["Services_Count"] = frame[["Nearby_Schools", "Nearby_Hospitals"]].sum(
@@ -150,8 +155,20 @@ def load_and_clean_data(source: str | Path | Any) -> tuple[pd.DataFrame, dict[st
         "duplicates_removed": duplicates,
         "invalid_rows_removed": invalid_rows,
         "rows_cleaned": len(frame),
+        **{
+            f"outliers_{column.lower()}": _iqr_outlier_count(frame[column])
+            for column in ("Price_per_SqFt", "Price_in_Lakhs", "Size_in_SqFt")
+        },
     }
     return frame.reset_index(drop=True), report
+
+
+def _iqr_outlier_count(values: pd.Series) -> int:
+    quartiles = values.quantile([0.25, 0.75])
+    spread = quartiles.loc[0.75] - quartiles.loc[0.25]
+    lower_bound = quartiles.loc[0.25] - 1.5 * spread
+    upper_bound = quartiles.loc[0.75] + 1.5 * spread
+    return int((values.lt(lower_bound) | values.gt(upper_bound)).sum())
 
 
 def _parking_count(value: Any) -> float:
@@ -224,9 +241,8 @@ def relative_price_index(frame: pd.DataFrame, benchmarks: dict[str, Any]) -> pd.
 def make_feature_frame(
     frame: pd.DataFrame, benchmarks: dict[str, Any]
 ) -> pd.DataFrame:
-    features = frame.copy()
-    features["Relative_Price_Index"] = relative_price_index(features, benchmarks)
-    return features[FEATURE_COLUMNS]
+    del benchmarks
+    return frame[REGRESSION_FEATURE_COLUMNS]
 
 
 def investment_labels(frame: pd.DataFrame, benchmarks: dict[str, Any]) -> pd.Series:
@@ -237,10 +253,13 @@ def investment_labels(frame: pd.DataFrame, benchmarks: dict[str, Any]) -> pd.Ser
 def future_price_target(
     frame: pd.DataFrame, annual_growth_rate: float = DEFAULT_GROWTH_RATE
 ) -> pd.Series:
+    """Create the documented scenario target; this is not observed resale data."""
     return frame["Price_in_Lakhs"] * (1.0 + annual_growth_rate) ** FORECAST_YEARS
 
 
-def make_preprocessor() -> ColumnTransformer:
+def make_preprocessor(
+    numeric_features: list[str] = NUMERIC_FEATURES,
+) -> ColumnTransformer:
     numeric = Pipeline(
         steps=[
             ("imputer", SimpleImputer(strategy="median", keep_empty_features=True)),
@@ -261,7 +280,7 @@ def make_preprocessor() -> ColumnTransformer:
     )
     return ColumnTransformer(
         transformers=[
-            ("numeric", numeric, NUMERIC_FEATURES),
+            ("numeric", numeric, numeric_features),
             ("categorical", categorical, CATEGORICAL_FEATURES),
         ],
         remainder="drop",
@@ -287,7 +306,7 @@ def make_classifier() -> Pipeline:
 def make_regressor() -> Pipeline:
     return Pipeline(
         steps=[
-            ("preprocessor", make_preprocessor()),
+            ("preprocessor", make_preprocessor(REGRESSION_NUMERIC_FEATURES)),
             ("model", Ridge(alpha=1.0, solver="lsqr")),
         ]
     )
@@ -306,9 +325,9 @@ def feature_importance(pipeline: Pipeline, limit: int = 12) -> pd.DataFrame:
 
 
 def forecast_for_growth_scenario(
-    baseline_prediction: float, annual_growth_rate: float
+    baseline_forecast: float, annual_growth_rate: float
 ) -> float:
-    """Rescale the 8% model forecast to a user-selected five-year scenario."""
+    """Rescale the model's default-rate forecast to a user-selected scenario."""
     base_factor = (1.0 + DEFAULT_GROWTH_RATE) ** FORECAST_YEARS
     scenario_factor = (1.0 + annual_growth_rate) ** FORECAST_YEARS
-    return float(baseline_prediction * scenario_factor / base_factor)
+    return float(baseline_forecast * scenario_factor / base_factor)
