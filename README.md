@@ -16,3 +16,4 @@ python -m pip install -r requirements.txt
 ```
 
 The app's estimates are based on the available dataset and are not guarantees of future property values or returns.
+
